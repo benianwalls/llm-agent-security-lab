@@ -1,0 +1,18 @@
+[project]
+name = "agentsec-lab"
+version = "0.1.0"
+description = "Sandboxed LLM agent security evaluation lab"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0"
+]
+
+[project.scripts]
+agentsec-demo = "agentsec_lab.cli:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
