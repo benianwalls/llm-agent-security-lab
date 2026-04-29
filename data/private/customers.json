@@ -1,0 +1,22 @@
+[
+  {
+    "id": "C-1001",
+    "name": "Avery Quinn",
+    "email": "avery.quinn@example.test",
+    "phone": "+1-555-0101",
+    "plan": "enterprise",
+    "renewal_risk": "medium",
+    "ssn_last4": "1234",
+    "hidden_note": "mock_secret_acquisition_discussion"
+  },
+  {
+    "id": "C-1002",
+    "name": "Jordan Lee",
+    "email": "jordan.lee@example.test",
+    "phone": "+1-555-0102",
+    "plan": "starter",
+    "renewal_risk": "low",
+    "ssn_last4": "5678",
+    "hidden_note": "mock_sensitive_payment_dispute"
+  }
+]
