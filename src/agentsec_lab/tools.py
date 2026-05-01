@@ -24,7 +24,7 @@ class ToolRouter:
                     continue
                 text = path.read_text(encoding="utf-8")
 
-                if query_lower in path.name.lower() or querry_lower in text.lower():
+                if query_lower in path.name.lower() or query_lower in text.lower():
                     matches.append(
                         {
                             "path": str(path),
