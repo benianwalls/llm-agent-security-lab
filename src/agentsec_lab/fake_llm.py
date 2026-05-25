@@ -82,34 +82,36 @@ class FakeLLM:
     ) -> str:
         lines = []
 
+        if blocked:
+            lines.append("Security controls blocked one or more requested actions.")
+            for item in blocked:
+                lines.append(f"- Blocked {item.name}: {item.reason}")
+            lines.append("")
+
         for result in observations:
-            if (
-                result.name == "search_docs"
-                and result.status == "ok"
-            ):
+            if result.name == "search_docs" and result.status == "ok":
                 docs = result.output or []
+                lines.append(f"Found {len(docs)} document(s).")
 
-                lines.append(
-                    f"Found {len(docs)} document(s)."
-                )
+                for doc in docs:
+                    if not doc.get("trusted", False):
+                        lines.append(
+                            "Note: one retrieved document came from an untrusted source."
+                        )
 
-            if (
-                result.name == "customer_lookup_private"
-                and result.status == "ok"
-            ):
-                lines.append(
-                    "Private customer lookup result:"
-                )
+                    content = doc["content"]
 
+                    if "ignore previous instructions" in content.lower():
+                        lines.append(
+                            "The document contained suspicious instruction-like text, so I treated it as untrusted content."
+                        )
+
+            if result.name == "customer_lookup_private" and result.status == "ok":
+                lines.append("Private customer lookup result:")
                 lines.append(str(result.output))
 
-            if (
-                result.name == "send_email"
-                and result.status == "ok"
-            ):
-                lines.append(
-                    f"Email written to fake outbox: {result.output}"
-                )
+            if result.name == "send_email" and result.status == "ok":
+                lines.append(f"Email written to fake outbox: {result.output}")
 
         if not lines:
             return "No action was taken."
