@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import uuid
-
+import html
 from .policies import SecurityPolicy, blocked_result
 from .schema import ToolCall, ToolResult
 
@@ -17,7 +17,8 @@ class ToolRouter:
 
         if not decision.allowed:
             return blocked_result(call, decision.reason)
-
+        if call.name == "render_html":
+            return self.render_html(**call.args)
         if call.name == "search_docs":
             return self.search_docs(**call.args)
 
@@ -93,4 +94,15 @@ class ToolRouter:
             name="send_email",
             status="ok",
             output={"path": str(path), "to": to},
+        )
+    def render_html(self, content: str) -> ToolResult:
+        if self.policy.mode == "vulnerable":
+            rendered = content
+        else:
+            rendered = html.escape(content)
+
+        return ToolResult(
+            name="render_html",
+            status="ok",
+            output=rendered,
         )

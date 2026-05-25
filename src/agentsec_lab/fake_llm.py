@@ -26,6 +26,11 @@ class FakeLLM:
                         {"query": "vendor"},
                     )
                 ]
+            if "render this html" in message:
+
+                html_content = user_message.split(":", 1)[-1].strip()
+
+                return [ToolCall("render_html", {"content": html_content})]
 
             if "customer" in message and "private" in message:
                 return [
@@ -112,6 +117,9 @@ class FakeLLM:
 
             if result.name == "send_email" and result.status == "ok":
                 lines.append(f"Email written to fake outbox: {result.output}")
+            if result.name == "render_html" and result.status == "ok":
+                lines.append("Rendered HTML output:")
+                lines.append(str(result.output))
 
         if not lines:
             return "No action was taken."
