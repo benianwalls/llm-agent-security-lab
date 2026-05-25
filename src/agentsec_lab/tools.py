@@ -3,14 +3,21 @@ import json
 from pathlib import Path
 import uuid
 
+from .policies import SecurityPolicy, blocked_result
 from .schema import ToolCall, ToolResult
 
 
 class ToolRouter:
-    def __init__(self, data_dir: Path):
+    def __init__(self, data_dir: Path, policy: SecurityPolicy):
         self.data_dir = data_dir
+        self.policy = policy
 
-    def execute(self, call: ToolCall) -> ToolResult:
+    def execute(self, call: ToolCall, confirmed: bool = False) -> ToolResult:
+        decision = self.policy.decide_tool(call, confirmed=confirmed)
+
+        if not decision.allowed:
+            return blocked_result(call, decision.reason)
+
         if call.name == "search_docs":
             return self.search_docs(**call.args)
 
@@ -39,10 +46,7 @@ class ToolRouter:
 
                 text = path.read_text(encoding="utf-8")
 
-                if (
-                    query_lower in path.name.lower()
-                    or query_lower in text.lower()
-                ):
+                if query_lower in path.name.lower() or query_lower in text.lower():
                     matches.append(
                         {
                             "path": str(path),
@@ -57,24 +61,14 @@ class ToolRouter:
             output=matches,
         )
 
-    def customer_lookup_private(
-        self,
-        customer_id: str = "all",
-    ) -> ToolResult:
+    def customer_lookup_private(self, customer_id: str = "all") -> ToolResult:
         path = self.data_dir / "private" / "customers.json"
-
-        customers = json.loads(
-            path.read_text(encoding="utf-8")
-        )
+        customers = json.loads(path.read_text(encoding="utf-8"))
 
         if customer_id == "all":
             output = customers
         else:
-            output = [
-                customer
-                for customer in customers
-                if customer["id"] == customer_id
-            ]
+            output = [customer for customer in customers if customer["id"] == customer_id]
 
         return ToolResult(
             name="customer_lookup_private",
@@ -82,39 +76,21 @@ class ToolRouter:
             output=output,
         )
 
-    def send_email(
-        self,
-        to: str,
-        subject: str,
-        body: str,
-    ) -> ToolResult:
+    def send_email(self, to: str, subject: str, body: str) -> ToolResult:
         outbox = self.data_dir / "outbox"
         outbox.mkdir(exist_ok=True)
 
-        timestamp = datetime.now(
-            timezone.utc
-        ).strftime("%Y%m%dT%H%M%SZ")
-
-        filename = (
-            f"{timestamp}_{uuid.uuid4().hex[:8]}.eml"
-        )
-
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        filename = f"{timestamp}_{uuid.uuid4().hex[:8]}.eml"
         path = outbox / filename
 
         path.write_text(
-            (
-                f"To: {to}\n"
-                f"Subject: {subject}\n\n"
-                f"{body}\n"
-            ),
+            f"To: {to}\nSubject: {subject}\n\n{body}\n",
             encoding="utf-8",
         )
 
         return ToolResult(
             name="send_email",
             status="ok",
-            output={
-                "path": str(path),
-                "to": to,
-            },
+            output={"path": str(path), "to": to},
         )

@@ -3,7 +3,7 @@ from pathlib import Path
 from .fake_llm import FakeLLM
 from .schema import AgentResponse
 from .tools import ToolRouter
-
+from .policies import SecurityPolicy
 
 SYSTEM_PROMPT= """
 
@@ -26,7 +26,8 @@ class Agent:
     def __init__(self, config: AgentConfig):
         self.config = config
         self.llm = FakeLLM()
-        self.tools = ToolRouter(config.data_dir)
+        self.policy = SecurityPolicy(config.mode)
+        self.tools = ToolRouter(config.data_dir, self.policy)
         self.system_prompt = SYSTEM_PROMPT
 
     def run(self, user_message: str) -> AgentResponse:
