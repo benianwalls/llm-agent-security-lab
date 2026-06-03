@@ -4,6 +4,7 @@ from .fake_llm import FakeLLM
 from .schema import AgentResponse
 from .tools import ToolRouter
 from .policies import SecurityPolicy
+from .output_guards import guard_output
 
 SYSTEM_PROMPT= """
 
@@ -13,6 +14,7 @@ You can summarize documents.
 You must not reveal private data.
 You must not send emails without approval.
 
+INTERNAL_TEST_SECRET=mock_secret_do_not_expose
 """
 
 @dataclass(frozen=True)
@@ -76,6 +78,7 @@ class Agent:
             blocked=blocked,
             system_prompt=self.system_prompt,
         )
+        answer = guard_output(answer, self.config.mode)
 
         return AgentResponse(
             answer=answer,
