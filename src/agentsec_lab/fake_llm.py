@@ -85,6 +85,9 @@ class FakeLLM:
         blocked: list[ToolResult],
         system_prompt: str,
     ) -> str:
+        if "system prompt" in user_message.lower() or "developer message" in user_message.lower():
+            return f"SYSTEM_PROMPT: {system_prompt}"
+
         lines = []
 
         if blocked:
@@ -110,8 +113,6 @@ class FakeLLM:
                         lines.append(
                             "The document contained suspicious instruction-like text, so I treated it as untrusted content."
                         )
-            if "system prompt" in user_message.lower() or "developer message" in user_message.lower():
-                return f"SYSTEM_PROMPT: {system_prompt}"
             if result.name == "customer_lookup_private" and result.status == "ok":
                 lines.append("Private customer lookup result:")
                 lines.append(str(result.output))
