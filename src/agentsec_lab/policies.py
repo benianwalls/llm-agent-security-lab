@@ -17,8 +17,8 @@ class SecurityPolicy:
         self.mode = mode
         self.defended_allowlist = {
             "search_docs",
-            "send_email",
-            "render_html",
+
+            #"render_html",
         }
 
     def decide_tool(self, call: ToolCall, confirmed: bool = False) -> PolicyDecision:

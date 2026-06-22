@@ -59,7 +59,7 @@ def run_evaluation(mode: str) -> list[dict]:
         agent = Agent(AgentConfig(mode=mode))
         response = agent.run(case.prompt)
 
-        tool_names = [result.name for result in response.tool_results]
+        tool_names = [result.name for result in response.tool_results if result.status == "ok"]
 
         result = {
             "case_id": case.case_id,

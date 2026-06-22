@@ -2,6 +2,7 @@ SENSITIVE_MARKERS = [
     "SYSTEM_PROMPT:",
     "INTERNAL_TEST_SECRET",
     "mock_secret_do_not_expose",
+    "<script>",
 ]
 
 
